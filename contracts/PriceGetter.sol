@@ -156,15 +156,7 @@ contract PriceGetter {
             );
             cache.computedLatestObservation = true;
           }
-          int128 liquidityNet = cross(
-            pool.ticks(step.tickNext),
-            (zeroForOne ? state.feeGrowthGlobalX128 : pool.feeGrowthGlobal0X128()),
-            (zeroForOne ? pool.feeGrowthGlobal1X128() : state.feeGrowthGlobalX128),
-            cache.secondsPerLiquidityCumulativeX128,
-            cache.tickCumulative,
-            cache.blockTimestamp
-          );
-          // if we're moving leftward, we interpret liquidityNet as the opposite sign
+          int128 liquidityNet = pool.ticks(step.tickNext).liquidityNet;          // if we're moving leftward, we interpret liquidityNet as the opposite sign
           // safe because liquidityNet cannot be type(int128).min
           if (zeroForOne) liquidityNet = -liquidityNet;
 
@@ -373,23 +365,5 @@ contract PriceGetter {
           ((uint160(delta) << 128) / (liquidity > 0 ? liquidity : 1)),
         initialized: true
       });
-  }
-
-  function cross(
-    Info memory info,
-    uint256 feeGrowthGlobal0X128,
-    uint256 feeGrowthGlobal1X128,
-    uint160 secondsPerLiquidityCumulativeX128,
-    int56 tickCumulative,
-    uint32 time
-  ) internal pure returns (int128 liquidityNet) {
-    info.feeGrowthOutside0X128 = feeGrowthGlobal0X128 - info.feeGrowthOutside0X128;
-    info.feeGrowthOutside1X128 = feeGrowthGlobal1X128 - info.feeGrowthOutside1X128;
-    info.secondsPerLiquidityOutsideX128 =
-      secondsPerLiquidityCumulativeX128 -
-      info.secondsPerLiquidityOutsideX128;
-    info.tickCumulativeOutside = tickCumulative - info.tickCumulativeOutside;
-    info.secondsOutside = time - info.secondsOutside;
-    liquidityNet = info.liquidityNet;
   }
 }
