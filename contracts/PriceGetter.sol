@@ -178,14 +178,6 @@ contract PriceGetter {
       }
     }
 
-    // update fee growth global and, if necessary, protocol fees
-    // overflow is acceptable, protocol has to withdraw before it hits type(uint128).max fees
-    if (zeroForOne) {
-      if (state.protocolFee > 0) pool.protocolFees().token0 += state.protocolFee;
-    } else {
-      if (state.protocolFee > 0) pool.protocolFees().token1 += state.protocolFee;
-    }
-
     (amount0, amount1) = zeroForOne == exactInput
       ? (amountSpecified - state.amountSpecifiedRemaining, state.amountCalculated)
       : (state.amountCalculated, amountSpecified - state.amountSpecifiedRemaining);
